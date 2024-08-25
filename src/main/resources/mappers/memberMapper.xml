@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miniproj.mapper.membermapper">
+	<!-- 위에서 dtd는 선언문 이게 xml 파일이라고 -->
+
+	<!-- 유저에게 지급된 point를 update하는 쿼리문 -->
+	<update id="updateUserPoint">
+		update member set userpoint = userpoint + (select pointScore from pointdef
+		where pointWhy = #{pointWhy}) where userId = #{pointWho};
+	</update>
+	
+	<!-- 아이디가 같은 데이터가 있는지 조회 -->
+	<select id="selectUserId" resultType="int">
+	select count(*) userId from member where userId = #{tmpUserId}
+	</select>
+	
+	<!-- 회원 가입하는 쿼리문 if 두개 안쓰려면 choose when otherwise mybatis dynamic sql 참고하기 -->
+	<insert id ="insertMember">
+		<if test="userImg != null">
+		insert into member(userId, userPwd, userName, gender, mobile, email, hobby, userImg)
+		values(#{userId}, sha1(md5(#{userPwd})), #{userName}, #{gender}, #{mobile}, #{email}, #{hobbies}, #{userImg})
+		</if>
+		<if test="userImg == null">
+		insert into member(userId, userPwd, userName, gender, mobile, email, hobby)
+		values(#{userId}, sha1(md5(#{userPwd})), #{userName}, #{gender}, #{mobile}, #{email}, #{hobbies})
+		</if>
+	</insert>
+	
+	
+	<!-- 로그인 시도하는 쿼리문 -->
+	<select id="loginWithLoginDTO" resultType="com.miniproj.model.MemberVO">
+		select * from member where userId = #{userId} and userPwd = sha1(md5(#{userPwd}))
+	</select>
+	
+	<!-- 자동 로그인 정보를 저장하는 쿼리문 -->
+	<update id="updateAutoLoginInfo">
+		update member set sesid=#{sesid} , allimit=#{allimit} where userId=#{userId}
+	</update>
+	
+	<!--  자동 로그인 유저를 확인하는 쿼리문 -->
+	<select id="checkAutoLoginUser" resultType="com.miniproj.model.MemberVO">
+	 	select * from member where sesId = #{sesId} and allimit > now()
+	</select>
+</mapper>

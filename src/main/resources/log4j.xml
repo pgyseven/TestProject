@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<!-- Appenders -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p: %c - %m%n" />
+		</layout>
+	</appender>
+	
+	<!-- Application Loggers -->
+	<logger name="com.miniproj.controller">
+		<level value="info" />
+	</logger>
+	
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework.core">
+		<level value="info" />
+	</logger>
+	
+	<logger name="org.springframework.beans">
+		<level value="info" />
+	</logger>
+	
+	<logger name="org.springframework.context">
+		<level value="info" />
+	</logger>
+
+	<logger name="org.springframework.web">
+		<level value="info" />
+	</logger>
+
+	<!-- Root Logger -->
+	<root>
+		<priority value="info" /> <!-- warn 원래는 이건데 info로 바꾼거인 로그를 기록하는 행위가 로깅 이고 로그레벨에는 
+		Trace흐름정도 지금 어디야~ debug유저가 남기는 info정보출력 warn경고 error fatal 개발한때는 1~3을 많이 쓴다. 
+		이 모든 걸 다하면 메모리 많이 잡아먹는다. 개발 배포후에는 아래 세개를 쓴다. 실행중에 심각한 오류 중에만 로그 뜨게! 
+		로그가 뜰때 파일로 저장되게 할 수도 있다. 기본적으로 워닝 레벨 이상을 콘솔창에 출력하게 되어있는데 우린 로그.info로 
+		썻었으니 바꾼거다. 그리고  이런순인데 아래로 갈수록 심각한거다 -->
+		<appender-ref ref="console" />
+	</root>
+	
+</log4j:configuration>

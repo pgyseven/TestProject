@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miniproj.mapper.rboardmapper">  <!-- 여긴 다오단에서 부를 이름이니 대문자 M 이 아니여도 된다.패키지명 클래스명 -->
+
+   <!-- 게시판의 모든 게시글을 번호 내림차순 정렬하여 가져오는 쿼리문 -->
+   <select id="getAllHBoard"
+      resultType="com.miniproj.model.HBoardVO">  <!-- list는 자바가 알고 있어서 안써도 됌 -->
+      select * from hboard where boardType = 'rboard' order by boardNo desc limit #{startRowIndex}, #{viewPostCntPerPage}
+   </select>
+
+   <!-- 새로운 게시글(댓글형)을 저장하는 쿼리문 -->
+   <insert id= "saveNewBoard">
+      insert into hboard(title, content, writer, boardType) values(#{title}, #{content}, #{writer}, 'rboard')
+   </insert>
+   
+   
+<!-- 저장된 글번호를 가져오는 쿼리문 -->
+   <select id="getMaxNo" resultType="int">
+      SELECT max(boardNo) FROM hboard where boardType = 'hboard'
+   </select>
+   
+   <!-- 업로드된 첨부파일을 저장하는 쿼리문 -->
+   <insert id="saveUpFile">
+      INSERT INTO boardupfiles(newFileName, originalFileName, thumbFileName, ext, size, boardNo, base64Img) 
+      VALUES(#{newFileName}, #{originalFileName}, #{thumbFileName}, #{ext}, #{size}, #{boardNo}, #{base64Img})
+   </insert>
+   
+   <!-- 글번호로 게시글을 가져오는 쿼리문
+   <select id="selectBoardByBoardNo" resultType="HBoardVO">
+      select * from hboard where boardNo = #{boardNo}
+   </select>  -->
+   
+   
+   <!-- 게시글의 상세정보를 담기 위한 reulstmap 설정 (여기서 맵은 맵핑의 뜻 어떤것과 연결한다!) 
+   resultmap에서 colum은 디비에서 어떻게 나오는지 잘보고 셀렉트 문에서 나오는 호출명과 일치 그리고 컬렉션을 아래로 내려줘야 에러가 안난다.-->
+   <resultMap type="com.miniproj.model.BoardDetailInfo" id="boardDetailInfoMap">
+ 
+ 
+    <result column="boardNo" property="boardNo" javaType="int" />
+    <result column="title" property="title" javaType="String"/>
+    <result column="content" property="content" javaType="String"/>
+    <result column="writer" property="writer" javaType="String"/>
+    <result column="postDate" property="postDate" javaType="java.sql.Timestamp"/>
+    <result column="readCount" property="readCount" javaType="int"/>
+    <result column="isDelete" property="isDelete" javaType="String"/>
+    
+	<result column="userName" property="userName" javaType="String"/>
+    <result column="email" property="email" javaType="String"/>
+    
+    
+</resultMap>
+
+<!-- 게시글의 상세정보를 담는 조인 문 -->
+ <select id="selectBoardDetailInfoByBoardNo" resultMap="boardDetailInfoMap">
+select h.boardNo, h.title, h.content, h.writer, h.postDate, h.readCount, h.isDelete
+, m.userName, m.email 
+from hboard h 
+inner join member m
+on h.writer = m.userId
+where h.boardNo = #{boardNo} and boardType = 'rboard'
+</select>
+
+
+   
+   
+   
+<!-- BoardReadLog 조회한 내역 저장 -->
+<insert id="saveBoardReadLog">
+insert into boardreadlog(readWho, boardNo) values(#{readWho}, #{boardNo})
+</insert>
+
+
+
+<!-- 게시글의 첨부파일을 pk 로 삭제하는 쿼리문 -->
+<delete id="deleteBoardUpFileByPK">
+delete from boardupfiles where boardUpFileNo = #{boardUpFileNo}
+</delete>
+
+<!-- 인기글 5개 가져오기 -->
+<select id="selectPopBoards" resultType="com.miniproj.model.HBoardVO">
+select boardNo, title, postDate from hboard where isDelete = 'N' and boardType = 'hboard' order by readCount desc, boardNo desc limit 5
+</select>
+
+<!-- 전체 데이터의 개수 가져오기 -->
+<select id="selectTotalCount" resultType="int">
+select count(*) from hboard where boardType = 'rboard'
+</select>
+
+<!-- 검색어가 있을 경우의 데이터 갯수 가져오기 -->
+   <select id="selectTotalCountWithSearchCriteria" resultType="int">
+      SELECT COUNT(*) FROM hboard
+      <choose>
+         <when test="searchType == 'title'">
+            WHERE title LIKE #{searchWord}
+         </when>
+         <when test="searchType == 'writer'">
+            WHERE writer LIKE #{searchWord}
+         </when>
+         <when test="searchType == 'content'">
+            WHERE content LIKE #{searchWord}
+         </when>
+      </choose>
+      and boardType = 'rboard'
+   </select>
+   
+   <!-- 검색어가 있을 경우의 페이징 처리 후 데이터 가져오기 -->
+   <select id="getSeasrchBoardWithPaging" resultType="com.miniproj.model.HBoardVO">
+      SELECT * FROM hboard
+      <choose>
+         <when test="searchType == 'title'">
+            WHERE title LIKE #{searchWord}
+         </when>
+         <when test="searchType == 'writer'">
+            WHERE writer LIKE #{searchWord}
+         </when>
+         <when test="searchType == 'content'">
+            WHERE content LIKE #{searchWord}
+         </when>
+      </choose>
+    	 and boardType = 'rboard'
+         ORDER BY boardNo desc LIMIT #{startRowIndex}, #{viewPostCntPerPage}
+   </select>
+
+</mapper>

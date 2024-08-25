@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miniproj.replyMapper">
+
+<!-- 댓글을 가지고 오는 쿼리문 -->
+<select id="getReplies" resultType="com.miniproj.model.ReplyVO">
+select r.*, m.userImg, m.userName, m.email 
+from replyboard r inner join member m
+on r.replyer = m.userId 
+where boardNo = #{boardNo} order by replyNo desc 
+limit #{startRowIndex}, #{viewPostCntPerPage}
+</select>
+<!-- 페이징 하는 메서드 -->
+<select id="getReplyCount" resultType="int">
+select count(*) from replyboard where boardNo = #{boardNo}
+</select>
+
+<!-- 게시글 저장하는 쿼리문 -->
+ <insert id="saveReply">
+  insert into replyboard(replyer,content,boardNo) values(#{replyer},#{content},#{boardNo});
+  </insert>
+
+</mapper>
